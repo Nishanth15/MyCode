@@ -1,0 +1,158 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SubscriptionID": {
+      "type": "String"
+    },
+    "customApis_BAM2_0_name": {
+      "defaultValue": "BAM2.0",
+      "type": "String"
+    },
+    "workflows_UserExperience_name": {
+      "defaultValue": "UserExperience",
+      "type": "String"
+    },
+    "connections_BAM2_0_name": {
+      "defaultValue": "BAM2.0",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+{
+  "type": "Microsoft.Logic/workflows",
+  "apiVersion": "2017-07-01",
+  "name": "[parameters('workflows_UserExperience_name')]",
+  "location": "westeurope",
+  "properties": {
+    "state": "Enabled",
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {}
+          }
+        }
+      },
+      "actions": {
+        "CheckPoint": {
+          "runAfter": {
+            "Initialize_variable": [
+              "Succeeded"
+            ]
+          },
+          "type": "ApiConnection",
+          "inputs": {
+            "body": {
+              "MessageBody": {
+                "Id": "@{variables('Id')}"
+              }
+            },
+            "headers": {
+              "SL360-IsTransactionComplete": "True",
+              "SL360-Stage": "Var",
+              "SL360-StageStatus": "Success",
+              "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+            },
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/api/CheckPoint"
+          }
+        },
+        "CheckPoint_2": {
+          "runAfter": {
+            "Start_Transaction_2": [
+              "Succeeded"
+            ]
+          },
+          "type": "ApiConnection",
+          "inputs": {
+            "body": {
+              "MessageBody": "@triggerBody()"
+            },
+            "headers": {
+              "SL360-Stage": "HttpReq",
+              "SL360-StageStatus": "Success",
+              "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+            },
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/api/CheckPoint"
+          }
+        },
+        "Initialize_variable": {
+          "runAfter": {
+            "CheckPoint_2": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Id",
+                "type": "string",
+                "value": "@{triggerBody()['UserDetails']['Id']}"
+              }
+            ]
+          }
+        },
+        "Start_Transaction_2": {
+          "runAfter": {},
+          "type": "ApiConnection",
+          "inputs": {
+            "body": {
+              "MessageBody": "@triggerBody()",
+              "MessageHeader": "@triggerOutputs()['headers']"
+            },
+            "headers": {
+              "SL360-BusinessProcess": "[parameters('workflows_UserExperience_name')]",
+              "SL360-IsTransactionComplete": "False",
+              "SL360-Transaction": "[concat(parameters('workflows_UserExperience_name'), 'BAM')]"
+            },
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/api/StartTransaction"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "parameters": {
+      "$connections": {
+        "value": {
+          "BAM2.0": {
+            "connectionId": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/connections', parameters('connections_BAM2_0_name'))]",
+            "connectionName": "BAM2.0",
+            "id": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/customApis', parameters('customApis_BAM2_0_name'))]"
+          }
+        }
+      }
+    }
+  }
+}
+  ]
+}
