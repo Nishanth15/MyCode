@@ -10,7 +10,7 @@
       "type": "String"
     },
     "workflows_BookingProcessor_name": {
-      "defaultValue": "UserExperience",
+      "defaultValue": "BookingProcessor",
       "type": "String"
     },
     "connections_BAM2_0_name": {
