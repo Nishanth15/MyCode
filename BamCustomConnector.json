@@ -8,6 +8,9 @@
     "BAMEndpoint": {
       "type": "String"
     },
+    "APIKey": {
+      "type": "String"    
+    },
     "customApis_BAM2_0_name": {
       "defaultValue": "BAM2.0",
       "type": "String"
@@ -41,6 +44,7 @@
               "displayName": "API Key",
               "description": "The API Key for this api",
               "tooltip": "Provide your API Key",
+              "defaultValue":"[parameters('APIKey')]",
               "constraints": {
                 "tabIndex": 2,
                 "clearText": false,

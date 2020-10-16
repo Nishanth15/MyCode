@@ -5,9 +5,6 @@
     "SubscriptionID": {
       "type": "String"    
     },
-    "APIKey": {
-        "type": "String"    
-      },
     "customApis_BAM2_0_name": {
       "defaultValue": "BAM2.0",   
       "type": "String"
