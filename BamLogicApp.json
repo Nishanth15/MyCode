@@ -95,9 +95,7 @@
                               }
                           },
                           "method": "post",
-                          "path": "/api/CheckPoint",
-                          "authentication": "[parameters('APIKey')]"
-                      }
+                          "path": "/api/CheckPoint"                      }
                   },
                   "Checkpoint_With_Correlation": {
                       "runAfter": {
