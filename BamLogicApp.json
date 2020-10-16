@@ -304,10 +304,10 @@
           "parameters": {
               "$connections": {
                   "value": {
-                      "BAM2.0": {
-                          "connectionId": "[parameters('connections_BAM2_0_name')]",
-                          "connectionName": "BAM2.0-1",
-                          "id": "[parameters('customApis_BAM2_0_name')]"
+                    "BAM2.0": {
+                        "connectionId": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/connections', parameters('connections_BAM2_0_name'))]",
+                        "connectionName": "BAM2.0",
+                        "id": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/customApis', parameters('customApis_BAM2_0_name'))]"
                       }
                   }
               }
