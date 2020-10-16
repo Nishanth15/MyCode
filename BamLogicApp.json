@@ -6,7 +6,7 @@
       "type": "String"    
     },
     "customApis_BAM2_0_name": {
-      "defaultValue": "BAM2.0",
+      "defaultValue": "BAM2.0",   
       "type": "String"
     },
     "workflows_UserExperience_name": {
