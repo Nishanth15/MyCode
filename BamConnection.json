@@ -26,7 +26,6 @@
   "name": "[parameters('connections_BAM2_0_name')]",
   "location": "westeurope",
   "properties": {
-    "displayName": "BAM_Connection",
     "customParameterValues": {},
     "api": {
       "id": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/customApis', parameters('customApis_BAM2_0_name'))]"
