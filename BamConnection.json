@@ -14,7 +14,7 @@
       "type": "String"
     },
     "APIKey": {
-      "type": "String"    
+      "type": "securestring"    
     },
     "connections_BAM2_0_name": {
       "defaultValue": "BAM2.0",
@@ -29,8 +29,8 @@
   "name": "[parameters('connections_BAM2_0_name')]",
   "location": "westeurope",
   "properties": {
-    "customParameterValues": {
-      "api_key":"[parameters('APIKey')]"
+    "parameterValues": {
+      "code":"[parameters('APIKey')]"
     },
     "api": {
       "id": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/customApis', parameters('customApis_BAM2_0_name'))]"
