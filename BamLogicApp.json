@@ -9,7 +9,7 @@
       "defaultValue": "BAM2.0",   
       "type": "String"
     },
-    "workflows_UserExperience_name": {
+    "workflows_BookingProcessor_name": {
       "defaultValue": "UserExperience",
       "type": "String"
     },
@@ -20,139 +20,299 @@
   },
   "variables": {},
   "resources": [
-{
-  "type": "Microsoft.Logic/workflows",
-  "apiVersion": "2017-07-01",
-  "name": "[parameters('workflows_UserExperience_name')]",
-  "location": "westeurope",
-  "properties": {
-    "state": "Enabled",
-    "definition": {
-      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-      "contentVersion": "1.0.0.0",
-      "parameters": {
-        "$connections": {
-          "defaultValue": {},
-          "type": "Object"
-        }
-      },
-      "triggers": {
-        "manual": {
-          "type": "Request",
-          "kind": "Http",
-          "inputs": {
-            "schema": {}
-          }
-        }
-      },
-      "actions": {
-        "CheckPoint": {
-          "runAfter": {
-            "Initialize_variable": [
-              "Succeeded"
-            ]
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2017-07-01",
+      "name": "[parameters('workflows_BookingProcessor_name')]",
+      "location": "westeurope",
+      "properties": {
+          "state": "Enabled",
+          "definition": {
+              "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+              "contentVersion": "1.0.0.0",
+              "parameters": {
+                  "$connections": {
+                      "defaultValue": {},
+                      "type": "Object"
+                  }
+              },
+              "triggers": {
+                  "manual": {
+                      "type": "Request",
+                      "kind": "Http",
+                      "inputs": {
+                          "schema": {
+                              "properties": {
+                                  "Destination": {
+                                      "type": "string"
+                                  },
+                                  "DriverId": {
+                                      "type": "string"
+                                  },
+                                  "DriverLocation": {
+                                      "type": "string"
+                                  },
+                                  "IsValid": {
+                                      "type": "string"
+                                  },
+                                  "UserId": {
+                                      "type": "string"
+                                  },
+                                  "UserLocation": {
+                                      "type": "string"
+                                  }
+                              },
+                              "type": "object"
+                          }
+                      }
+                  }
+              },
+              "actions": {
+                  "CheckPoint": {
+                      "runAfter": {
+                          "Initialize_variable_2": [
+                              "Succeeded"
+                          ]
+                      },
+                      "type": "ApiConnection",
+                      "inputs": {
+                          "body": {
+                              "MessageBody": "@variables('RequestBody')",
+                              "MessageHeader": "@triggerOutputs()['headers']"
+                          },
+                          "headers": {
+                              "SL360-ArchiveMessage": "True",
+                              "SL360-Stage": "RequestReceived",
+                              "SL360-StageStatus": "Success",
+                              "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+                          },
+                          "host": {
+                              "connection": {
+                                  "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                              }
+                          },
+                          "method": "post",
+                          "path": "/api/CheckPoint"
+                      }
+                  },
+                  "Checkpoint_With_Correlation": {
+                      "runAfter": {
+                          "Condition": [
+                              "Succeeded"
+                          ]
+                      },
+                      "type": "ApiConnection",
+                      "inputs": {
+                          "body": {
+                              "Property": [
+                                  {
+                                      "Name": "BookingId",
+                                      "Value": "@variables('BookingId')"
+                                  }
+                              ]
+                          },
+                          "headers": {
+                              "SL360-BusinessProcess": "BookingProcessor",
+                              "SL360-IgnoreNotFound": "True",
+                              "SL360-IsTransactionComplete": "True",
+                              "SL360-Stage": "FurtherStages",
+                              "SL360-StageStatus": "Success",
+                              "SL360-Transaction": "DetailsValidator"
+                          },
+                          "host": {
+                              "connection": {
+                                  "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                              }
+                          },
+                          "method": "post",
+                          "path": "/api/CheckpointWithCorrelation"
+                      }
+                  },
+                  "Condition": {
+                      "actions": {
+                          "CheckPoint_2": {
+                              "runAfter": {
+                                  "CheckPoint_4": [
+                                      "Succeeded"
+                                  ]
+                              },
+                              "type": "ApiConnection",
+                              "inputs": {
+                                  "headers": {
+                                      "SL360-Stage": "SendMsgToValidSub",
+                                      "SL360-StageStatus": "Success",
+                                      "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+                                  },
+                                  "host": {
+                                      "connection": {
+                                          "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                                      }
+                                  },
+                                  "method": "post",
+                                  "path": "/api/CheckPoint"
+                              }
+                          },
+                          "CheckPoint_4": {
+                              "runAfter": {},
+                              "type": "ApiConnection",
+                              "inputs": {
+                                  "headers": {
+                                      "SL360-Stage": "RequestValidator",
+                                      "SL360-StageStatus": "Success",
+                                      "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+                                  },
+                                  "host": {
+                                      "connection": {
+                                          "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                                      }
+                                  },
+                                  "method": "post",
+                                  "path": "/api/CheckPoint"
+                              }
+                          }
+                      },
+                      "runAfter": {
+                          "CheckPoint": [
+                              "Succeeded"
+                          ]
+                      },
+                      "else": {
+                          "actions": {
+                              "CheckPoint_3": {
+                                  "runAfter": {
+                                      "CheckPoint_5": [
+                                          "Succeeded"
+                                      ]
+                                  },
+                                  "type": "ApiConnection",
+                                  "inputs": {
+                                      "headers": {
+                                          "SL360-Exception": "ERROR_INVALID_ID",
+                                          "SL360-ExceptionCode": "Invalid User ID",
+                                          "SL360-Stage": "SendMsgToInvalidSub",
+                                          "SL360-StageStatus": "Failure",
+                                          "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+                                      },
+                                      "host": {
+                                          "connection": {
+                                              "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                                          }
+                                      },
+                                      "method": "post",
+                                      "path": "/api/CheckPoint"
+                                  }
+                              },
+                              "CheckPoint_5": {
+                                  "runAfter": {},
+                                  "type": "ApiConnection",
+                                  "inputs": {
+                                      "headers": {
+                                          "SL360-Stage": "RequestValidator",
+                                          "SL360-StageStatus": "Failure",
+                                          "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
+                                      },
+                                      "host": {
+                                          "connection": {
+                                              "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                                          }
+                                      },
+                                      "method": "post",
+                                      "path": "/api/CheckPoint"
+                                  }
+                              }
+                          }
+                      },
+                      "expression": {
+                          "and": [
+                              {
+                                  "equals": [
+                                      "@triggerBody()?['IsValid']",
+                                      true
+                                  ]
+                              }
+                          ]
+                      },
+                      "type": "If"
+                  },
+                  "Initialize_variable": {
+                      "runAfter": {},
+                      "type": "InitializeVariable",
+                      "inputs": {
+                          "variables": [
+                              {
+                                  "name": "BookingId",
+                                  "type": "string",
+                                  "value": "@{guid()}"
+                              }
+                          ]
+                      }
+                  },
+                  "Initialize_variable_2": {
+                      "runAfter": {
+                          "Start_Transaction_2": [
+                              "Succeeded"
+                          ]
+                      },
+                      "type": "InitializeVariable",
+                      "inputs": {
+                          "variables": [
+                              {
+                                  "name": "RequestBody",
+                                  "type": "string",
+                                  "value": "{\n\"BookingId\":\"@{variables('BookingId')}\",\n\"Content\":@{triggerBody()}\n}"
+                              }
+                          ]
+                      }
+                  },
+                  "Response": {
+                      "runAfter": {
+                          "Checkpoint_With_Correlation": [
+                              "Succeeded"
+                          ]
+                      },
+                      "type": "Response",
+                      "kind": "Http",
+                      "inputs": {
+                          "body": "@body('Checkpoint_With_Correlation')",
+                          "statusCode": 200
+                      }
+                  },
+                  "Start_Transaction_2": {
+                      "runAfter": {
+                          "Initialize_variable": [
+                              "Succeeded"
+                          ]
+                      },
+                      "type": "ApiConnection",
+                      "inputs": {
+                          "headers": {
+                              "SL360-BusinessProcess": "BookingProcessor",
+                              "SL360-Transaction": "DetailsValidator"
+                          },
+                          "host": {
+                              "connection": {
+                                  "name": "@parameters('$connections')['BAM2.0']['connectionId']"
+                              }
+                          },
+                          "method": "post",
+                          "path": "/api/StartTransaction"
+                      }
+                  }
+              },
+              "outputs": {}
           },
-          "type": "ApiConnection",
-          "inputs": {
-            "body": {
-              "MessageBody": {
-                "Id": "@{variables('Id')}"
+          "parameters": {
+              "$connections": {
+                  "value": {
+                      "BAM2.0": {
+                          "connectionId": "[parameters('connections_BAM2_0_name')]",
+                          "connectionName": "BAM2.0-1",
+                          "id": "[parameters('customApis_BAM2_0_name')]"
+                      }
+                  }
               }
-            },
-            "headers": {
-              "SL360-IsTransactionComplete": "True",
-              "SL360-Stage": "Var",
-              "SL360-StageStatus": "Success",
-              "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
-            },
-            "host": {
-              "connection": {
-                "name": "@parameters('$connections')['BAM2.0']['connectionId']"
-              }
-            },
-            "method": "post",
-            "path": "/api/CheckPoint"
           }
-        },
-        "CheckPoint_2": {
-          "runAfter": {
-            "Start_Transaction_2": [
-              "Succeeded"
-            ]
-          },
-          "type": "ApiConnection",
-          "inputs": {
-            "body": {
-              "MessageBody": "@triggerBody()"
-            },
-            "headers": {
-              "SL360-Stage": "HttpReq",
-              "SL360-StageStatus": "Success",
-              "SL360-TransactionInstanceId": "@body('Start_Transaction_2')?['TransactionInstanceId']"
-            },
-            "host": {
-              "connection": {
-                "name": "@parameters('$connections')['BAM2.0']['connectionId']"
-              }
-            },
-            "method": "post",
-            "path": "/api/CheckPoint"
-          }
-        },
-        "Initialize_variable": {
-          "runAfter": {
-            "CheckPoint_2": [
-              "Succeeded"
-            ]
-          },
-          "type": "InitializeVariable",
-          "inputs": {
-            "variables": [
-              {
-                "name": "Id",
-                "type": "string",
-                "value": "@{triggerBody()['UserDetails']['Id']}"
-              }
-            ]
-          }
-        },
-        "Start_Transaction_2": {
-          "runAfter": {},
-          "type": "ApiConnection",
-          "inputs": {
-            "body": {
-              "MessageBody": "@triggerBody()",
-              "MessageHeader": "@triggerOutputs()['headers']"
-            },
-            "headers": {
-              "SL360-BusinessProcess": "[parameters('workflows_UserExperience_name')]",
-              "SL360-IsTransactionComplete": "False",
-              "SL360-Transaction": "[concat(parameters('workflows_UserExperience_name'), 'BAM')]"
-            },
-            "host": {
-              "connection": {
-                "name": "@parameters('$connections')['BAM2.0']['connectionId']"
-              }
-            },
-            "method": "post",
-            "path": "/api/StartTransaction"
-          }
-        }
-      },
-      "outputs": {}
-    },
-    "parameters": {
-      "$connections": {
-        "value": {
-          "BAM2.0": {
-            "connectionId": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/connections', parameters('connections_BAM2_0_name'))]",
-            "connectionName": "BAM2.0",
-            "id": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/customApis', parameters('customApis_BAM2_0_name'))]"
-          }
-        }
       }
-    }
   }
-}
   ]
 }
