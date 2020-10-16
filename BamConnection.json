@@ -30,7 +30,7 @@
   "location": "westeurope",
   "properties": {
     "parameterValues": {
-      "code":"[parameters('APIKey')]"
+      "api_key":"[parameters('APIKey')]"
     },
     "api": {
       "id": "[resourceId(parameters('SubscriptionID'),resourceGroup().name, 'Microsoft.Web/customApis', parameters('customApis_BAM2_0_name'))]"
