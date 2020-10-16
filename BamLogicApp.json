@@ -53,7 +53,7 @@
                                       "type": "string"
                                   },
                                   "IsValid": {
-                                      "type": "string"
+                                      "type": "boolean"
                                   },
                                   "UserId": {
                                       "type": "string"
