@@ -5,6 +5,9 @@
     "SubscriptionID": {
       "type": "String"
     },
+    "BAMEndpoint": {
+      "type": "String"
+    },
     "customApis_BAM2_0_name": {
       "defaultValue": "BAM2.0",
       "type": "String"
@@ -29,7 +32,7 @@
         "description": "A sample custom API",
         "displayName": "[parameters('customApis_BAM2_0_name')]",
         "backendService": {
-          "serviceUrl": "https://sl360bam-4c93a994117e491abf4aefc75edf3d14-fnapp.azurewebsites.net"
+          "serviceUrl": "[parameters('BAMEndpoint')]"
         },
         "connectionParameters": {
           "api_key": {
