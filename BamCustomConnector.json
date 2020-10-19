@@ -19,6 +19,10 @@
     "connections_BAM2_0_name": {
       "defaultValue": "BAM2.0",
       "type": "String"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
     }
   },
   "variables": {},
@@ -27,7 +31,7 @@
       "type": "Microsoft.Web/customApis",
       "apiVersion": "2016-06-01",
       "name": "[parameters('customApis_BAM2_0_name')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "properties": {
         "description": "A sample custom API",
         "displayName": "[parameters('customApis_BAM2_0_name')]",
