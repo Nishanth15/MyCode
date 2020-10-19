@@ -27,7 +27,7 @@
       "type": "Microsoft.Web/customApis",
       "apiVersion": "2016-06-01",
       "name": "[parameters('customApis_BAM2_0_name')]",
-      "location": "resourceGroup().location",
+      "location": "[resourceGroup().location]",
       "properties": {
         "description": "A sample custom API",
         "displayName": "[parameters('customApis_BAM2_0_name')]",
