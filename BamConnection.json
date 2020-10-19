@@ -3,22 +3,18 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "SubscriptionID": {
-      "type": "String"
+      "type": "string"
     },
     "customApis_BAM2_0_name": {
       "defaultValue": "BAM2.0",
-      "type": "String"
-    },
-    "workflows_UserExperience_name": {
-      "defaultValue": "UserExperience",
-      "type": "String"
+      "type": "string"
     },
     "APIKey": {
       "type": "securestring"    
     },
     "connections_BAM2_0_name": {
       "defaultValue": "BAM2.0",
-      "type": "String"
+      "type": "string"
     },
     "location": {
       "type": "string",
